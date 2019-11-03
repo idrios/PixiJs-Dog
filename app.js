@@ -8,19 +8,22 @@ var PUP_CONFIG = "desktop-default"
 // frameData (layout constraints)
 var _frameWidth; 
 var _frameHeight; 
-var _marginWidth; 
+var _marginWidth; // these really make more sense being associated with the image
 var _marginHeight; 
 var _bufferWidth;
 
 // pupInfo (layout variables)
-var _pupStyleQuantity; 
+var _pupStyleCount; 
 var _pupStyleWidth;
 var _pupStyleHeight; 
 var _pupStyleAspectRatio // (Width / Height) 
-var _maxPupWidth; 
-var _maxPupHeight;
-var _maxPupsPerRow; 
-var _pupIndexToCoordinate;
+var _pupStyleWidthMax; 
+var _pupStyleHeightMax;
+var _pupStyleWidth; 
+var _pupStyleHeight; 
+var _pupStyleXCoordinates;
+var _pupStyleYCoordinates; 
+var _pupResource = "pup"; 
 
 var _pupMain;
 
@@ -29,7 +32,7 @@ var _renderer;
 var _stage; 
 
 PIXI.loader // TODO: learn pixi well enough to do this initialization smarter
-    .add("pup", "images/pup.png")
+    .add(_pupResource, "images/pup.png")
     .load(setup); 
 
 function setup() {
@@ -52,6 +55,9 @@ function loadConfigParameters(){
         case "desktop-default":
             loadConfigDesktopDefault(); 
             break;
+        case "square512":
+            loadConfigSquare512();
+            break; 
         default:
             loadConfigDesktopDefault(); 
             break; 
@@ -59,6 +65,14 @@ function loadConfigParameters(){
 }
 
 function loadConfigDesktopDefault(){
+    _frameWidth = document.body.clientWidth; 
+    _frameHeight = document.body.clientHeight; 
+    _marginWidth = 10; 
+    _marginHeight = 10; 
+    _bufferWidth = 10; 
+}
+
+function loadConfigSquare512(){
     _frameWidth = 512; 
     _frameHeight = 512; 
     _marginWidth = 10; 
@@ -81,6 +95,28 @@ function attachPixi(){
 
 // Initialize pup -----------------------------------------------
 function loadPupParameters(){
+    switch(PUP_CONFIG){
+        case "desktop-default":
+            loadPupConfigDesktopDefault(); 
+            break;
+        default:
+            loadPupConfigDesktopDefault(); 
+            break; 
+    }
+}
+
+function loadPupConfigDesktopDefault(){
+    _pupMain = new PIXI.Sprite(
+        PIXI.loader.resources["pup"].texture
+    );
+    _pupStyleWidthMax = 100; 
+    _pupStyleHeightMax = 100; 
+    _pupStyleAspectRatio = CalculatePixiAspectRatio(_pupMain); 
+    _pupStyleWidth = CalculatePupWidth(_pupStyleWidthMax, _pupStyleHeightMax, _pupStyleAspectRatio); 
+    _pupStyleHeight = CalculatePupHeight(_pupStyleWidthMax, _pupStyleHeightMax, _pupStyleAspectRatio);
+    _pupStyleCount = CalculatePupCount(_pupStyle); 
+    _pupStyleXCoordinates = CalculateXCoordinates(_pupStyleCount, _pupStyleWidth, _marginWidth); // TODO: Obviously these should go in a key-value paired object but I'm still very new to
+    _pupStyleYCoordinates = CalculateYCoordinates(_pupStyleCount, _pupStyleWidth, _marginHeight); // JavaScript and don't know the right way to do that. 
 
 }
 
@@ -121,27 +157,84 @@ function animationLoop() {
 }
 
 // Pup styles ------------------------------
-function addPupStyle(index, style){
-    var pup = style; 
+//
+function addPupStyle(index, styles){ 
+    var pup = styles; 
 
 }
 
-function SpinningPupStyle(){
+function SpinningPupStyle(callbackSprite, targetSprite){
     pup = new PIXI.Sprite(
         PIXI.loader.resources["pup"].texture
     );
     // TODO: logic for pup that makes main pup spin
 
-
     return pup
 }
 
 function BouncingPupStyle(){
-    pup = new PIXI.Sprite(
+    var pup = new PIXI.Sprite(
         PIXI.loader.resources["pup"].texture
     );
     // TODO: logic for pup that makes main pup bounce around like a happy pup
 
 
     return pup; 
+}
+
+// Utils
+   ///////////////////////////////////////////////////  ^
+   //                                               //  |
+   //                                               //  |
+   //              .--------------.                 //  |
+   //              |  ..|\__/|.   |                 //  |
+   // marginWidth  |  ;:  O O \;  |                 //  |
+   //  |           |   '',,\u/'   |                 //  |height
+   //  |           '--------------'                 //  |
+   //  | pupWidth          bufferWidth              //  |
+   //  | <----->             --> <--                //  |
+   //  V .-----. .-----. .-----. .-----. .-----.    //  |
+   //<-->| i=0 | | i=1 | | ... | |     | | i=n |    //  |
+   //    '-----' '-----' '-----' '-----' '-----'    //  |
+   ///////////////////////////////////////////////////  v
+// <--------------------width------------------------>
+
+// n := count := number of stylePups
+// aspectRatio := width / height
+// pupWidth = MIN(maxPupWidth, maxPupHeight*aspectRatio)
+function CalculatePixiAspectRatio(pixiSprite){
+    var frame = pixiSprite._texture._frame; 
+    var width = frame.width; 
+    var height = frame.height; 
+    return width/height; 
+}
+
+function CalculatePupWidth(pupWidthMax, pupHeightMax, aspectRatio){
+    return Math.min(pupWidthMax, pupHeightMax*aspectRatio)
+}
+
+function CalculatePupHeight(pupWidthMax, pupHeightMax, aspectRatio){
+    return Math.min(pupHeightMax, pupWidthMax/aspectRatio)
+}
+
+function CalculatePupCount(width, marginWidth, bufferWidth, pupWidth){
+    return Math.floor((width - (2*marginWidth) - bufferWidth)/pupWidth+bufferWidth); 
+    
+}
+
+function CalculateXCoordinates(pupCount, pupWidth, marginWidth){
+    var coords = new Array(pupCount); 
+    for(var i = 0; i < coords.length; i++){
+        coords[i] = marginWidth + (pupWidth*i) + (Math.floor(pupWidth/2)); 
+    }
+    return coords; 
+}
+
+function CalculateYCoordinates(pupCount, pupHeight, marginHeight, canvasHeight){
+    var y = canvasHeight - (marginHeight + Math.floor(pupHeight/2));
+    var coords = new Array(pupCount); 
+    for(var i = 0; i < pupCount.length; i++){
+        coords[i] = y; 
+    }
+    return coords; 
 }
