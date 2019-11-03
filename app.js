@@ -25,7 +25,8 @@ var _pupStyleXCoordinates;
 var _pupStyleYCoordinates; 
 var _pupResource = "pup"; 
 
-var _pupMain;
+var _pupMain = new PupMain();
+var _pupStyle = new PupStyle(); 
 
 // pixijs renderer
 var _renderer; 
