@@ -1,4 +1,81 @@
 //-----------------------------------------------------------------------------
+// Scene
+//
+// frame object containing the entire display
+class Scene {
+
+}
+
+Object.defineProperties(Scene.prototype, {
+    // layout constraints
+    width: { get: function() {return this._width}, configurable: true},
+    height: { get: function() {return this._height}, configurable: true},
+    margin_width: { get: function() {return this._margin_width}, configurable: true}, // these really make more sense being associated with the image
+    margin_height: { get: function() {return this._margin_height}, configurable: true},
+    buffer_width: { get: function() {return this._buffer_width}, configurable: true},
+    buffer_height: { get: function() {return this._buffer_height}, configurable: true},
+
+    // pixijs stuff
+    renderer: { get: function() {return this._renderer}},
+    stage: { get: function() {return this._stage}}
+
+    //
+});
+
+/**
+ * @param {int} w Width of canvas (px)
+ * @param {int} h Height of canvas (px)
+ * @param {int} m_w Margin width - blank space on left and right edges (px)
+ * @param {int} m_h Margin height - blank space on top and bottom edges (px)
+ * @param {int} buf_w Buffer width - horizontal blank space between elements (px)
+ * @param {int} buf_h Buffer height - vertial blank space between elements (px)
+ */
+Scene.prototype.setlayout = function(w, h, m_w, m_h, buf_w, buf_h){
+    this._width = w; 
+    this._height = h; 
+    this._margin_width = m_w; 
+    this._margin_height = m_h; 
+    this._buffer_width = buf_w; 
+    this._buffer_height = buf_h; 
+}
+
+Scene.prototype.initialize = function(){
+    this._renderer = PIXI.autoDetectRenderer(_frameWidth, _frameHeight, {
+        transparent: true, 
+        resolution: 1
+    }); 
+    this._stage = new PIXI.Container();
+}
+
+//-----------------------------------------------------------------------------
+// PupHolder
+//
+// Container object for each pup
+// I've changed my mind htough about this and will not use it.. keeping it here
+// for posterity though
+class PupHolder {
+
+}
+
+Object.defineProperties(PupHolder.prototype, {
+    // x coordinate
+    x: { get: function() {return this._x}, configurable: true}, 
+    // y coordinate
+    y = { get: function() {return this._y}, configurable: true},
+    // width
+    width: { get: function() {return this._width}, configurable: true }, 
+    // height
+    height: { get: function() {return this._height}, configurable: true },
+    // index
+    index: {get: function() {return this._index}, configurable: true },
+    // available
+    available: {get: function() {return this._available}, configurable: true}, 
+    // style pup
+    pup: {get: function() {return this._pup}, configurable: true}
+})
+
+
+//-----------------------------------------------------------------------------
 // PupBase
 //
 // The superclass of PupMain and PupStyle
@@ -55,35 +132,8 @@ Object.defineProperties(PupStyleSet.prototype, {
 });
 
 PupStyleSet.prototype.initialize = function(){
-    if(!width || !height || !pWidth || !pHeight){
-        throw "Must initialize with width, height, pupWidth, and pupHeight constraints"; 
-    }
-    this.count = 
+    
 }
-//-----------------------------------------------------------------------------
-// PupHolder
-//
-// Container object for each pup
-function PupHolder() {
-
-}
-
-Object.defineProperties(PupHolder.prototype, {
-    // x coordinate
-    x: { get: function() {return this._x}, configurable: true}, 
-    // y coordinate
-    y = { get: function() {return this._y}, configurable: true},
-    // width
-    width: { get: function() {return this._width}, configurable: true }, 
-    // height
-    height: { get: function() {return this._height}, configurable: true },
-    // index
-    index: {get: function() {return this._index}, configurable: true },
-    // available
-    available: {get: function() {return this._available}, configurable: true}, 
-    // style pup
-    pup: {get: function() {return this._pup}, configurable: true}
-})
 
 //-----------------------------------------------------------------------------
 // PupStyle
